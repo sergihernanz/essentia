@@ -19,7 +19,7 @@
 
 #include "sinesubtraction.h"
 #include "essentiamath.h"
-#include <essentia/utils/synth_utils.h>
+#include "essentia/utils/synth_utils.h"
 
 using namespace essentia;
 using namespace standard;

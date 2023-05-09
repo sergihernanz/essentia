@@ -148,7 +148,10 @@ Cross-compiling for iOS
 A lightweight version of Essentia for iOS can be compiled using the ```--cross-compile-ios``` flag. It requires reducing the dependencies to a bare minimum using Accelerate Framework for FFT. 
 
 ```
-./waf configure --cross-compile-ios --lightweight= --fft=ACCELERATE --build-static
+./waf configure --cross-compile-ios --lightweight= --fft=ACCELERATE --build-static --prefix=iosbuild/
+./waf clean && ./waf -v && ./waf install
+./waf configure --cross-compile-ios-sim --lightweight= --fft=ACCELERATE --build-static --prefix=iosbuild-sim/ --ignore-algos=NNLSChroma
+./waf clean && ./waf -v && ./waf install
 ```
 
 You can also compile it for iOS simulator (so that you can test on your desktop) using ```--cross-compile-ios-sim``` flag.

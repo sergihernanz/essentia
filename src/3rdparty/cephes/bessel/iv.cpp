@@ -53,6 +53,7 @@ Copyright 1984, 1987, 1988, 2000 by Stephen L. Moshier
 
 #include <cstddef>
 #include "bessel.h"
+#include <assert.h>
 
 // #ifdef ANSIPROT
 // extern double hyperg ( double, double, double );

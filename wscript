@@ -265,13 +265,13 @@ def configure(ctx):
         ctx.env.CXXFLAGS += ['-fembed-bitcode']
 
     if ctx.options.CROSS_COMPILE_IOS_SIM:
-        print ("→ Cross-compiling for iOS Simulator (i386)")
-        ctx.env.CXXFLAGS += ['-arch', 'i386']
-        ctx.env.LINKFLAGS += ['-arch', 'i386']
-        ctx.env.LDFLAGS += ['-arch', 'i386']
-        ctx.env.CXXFLAGS += ['-arch', 'x86_64']
-        ctx.env.LINKFLAGS += ['-arch', 'x86_64']
-        ctx.env.LDFLAGS += ['-arch', 'x86_64']
+        print ("→ Cross-compiling for iOS Simulator (arm64-simulator)")
+        ctx.env.CXXFLAGS += ['-arch', 'arm64', '-target', 'arm64-apple-ios10.0-simulator']
+        ctx.env.LINKFLAGS += ['-arch', 'arm64', '-target', 'arm64-apple-ios10.0-simulator']
+        ctx.env.LDFLAGS += ['-arch', 'arm64', '-target', 'arm64-apple-ios10.0-simulator']
+        ctx.env.CXXFLAGS += ['-arch', 'x86_64', '-target', 'x86_64-apple-ios10.0-simulator']
+        ctx.env.LINKFLAGS += ['-arch', 'x86_64', '-target', 'x86_64-apple-ios10.0-simulator']
+        ctx.env.LDFLAGS += ['-arch', 'x86_64', '-target', 'x86_64-apple-ios10.0-simulator']
 
         ctx.env.CXXFLAGS += ['-stdlib=libc++']
         ctx.env.CXXFLAGS += ['-miphoneos-version-min=5.0']
