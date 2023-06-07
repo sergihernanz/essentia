@@ -40,6 +40,7 @@ RhythmExtractor2013::RhythmExtractor2013() : AlgorithmComposite() {
   declareInput(_signal, "signal", "input signal");
 
   declareOutput(_ticks, "ticks", "the estimated tick locations [s]");
+  declareOutput(_onsets, "onsets", "the raw onset detection [43.066 Hz 1024/44100]");
   declareOutput(_confidence, "confidence", "confidence with which the ticks are detected (ignore this value if using 'degara' method)");
   declareOutput(_bpm, "bpm", "the tempo estimation [bpm]");
   declareOutput(_estimates, "estimates", "the list of bpm estimates characterizing the bpm distribution for the signal [bpm]");
@@ -68,6 +69,7 @@ void RhythmExtractor2013::createInnerNetwork() {
   _signal                           >>  _beatTracker->input("signal");
   //_beatTracker->output("ticks")     >>  _ticks;
   _beatTracker->output("ticks")     >>  PC(_pool, "internal.ticks");
+  _beatTracker->output("onsets")     >>  PC(_pool, "internal.onsets");
 
 
   // TODO change SinkProxy in BpmRubato to Real?
@@ -149,6 +151,12 @@ AlgorithmStatus RhythmExtractor2013::process() {
   else {
     _ticks.push(vector<Real>());
   }
+    if (_pool.contains<vector<Real> >("internal.onsets")) {
+        const vector<Real>& onsets = _pool.value<vector<Real> >("internal.onsets");
+        _onsets.push(onsets);
+    } else {
+        _onsets.push(vector<Real>());
+    }
 
   _bpmIntervals.push(bpmIntervals);
 
@@ -214,6 +222,7 @@ RhythmExtractor2013::RhythmExtractor2013() {
   declareInput(_signal, "signal", "the audio input signal");
   declareOutput(_bpm, "bpm", "the tempo estimation [bpm]");
   declareOutput(_ticks, "ticks", " the estimated tick locations [s]");
+  declareOutput(_onsets, "onsets", "the raw onset detection [43.066 Hz 1024/44100]");
   declareOutput(_confidence, "confidence", "confidence with which the ticks are detected (ignore this value if using 'degara' method)");
   declareOutput(_estimates, "estimates", "the list of bpm estimates characterizing the bpm distribution for the signal [bpm]");
   //declareOutput(_rubatoStart, "rubatoStart", "list of start times for rubato section [s]");
@@ -240,6 +249,7 @@ void RhythmExtractor2013::createInnerNetwork() {
 
   *_vectorInput  >>  _rhythmExtractor->input("signal");
   _rhythmExtractor->output("ticks")         >>  PC(_pool, "internal.ticks");
+  _rhythmExtractor->output("onsets")         >>  PC(_pool, "internal.onsets");
   _rhythmExtractor->output("confidence")    >>  PC(_pool, "internal.confidence");
   _rhythmExtractor->output("bpm")           >>  PC(_pool, "internal.bpm");
   _rhythmExtractor->output("estimates")     >>  PC(_pool, "internal.estimates");
@@ -259,6 +269,7 @@ void RhythmExtractor2013::compute() {
 
   Real& bpm = _bpm.get();
   vector<Real>& ticks = _ticks.get();
+  vector<Real>& onsets = _onsets.get();
   Real& confidence = _confidence.get();
   vector<Real>& estimates = _estimates.get();
   //vector<Real>& rubatoStart = _rubatoStart.get();
@@ -268,6 +279,7 @@ void RhythmExtractor2013::compute() {
 
   bpm = _pool.value<Real>("internal.bpm");
   ticks = _pool.value<vector<Real> >("internal.ticks");
+    onsets = _pool.value<vector<Real>>("internal.onsets");
   confidence = _pool.value<Real>("internal.confidence");
   estimates = _pool.value<vector<Real> >("internal.estimates");
   bpmIntervals = _pool.value<vector<Real> >("internal.bpmIntervals");
@@ -286,6 +298,7 @@ void RhythmExtractor2013::compute() {
 void RhythmExtractor2013::reset() {
   _network->reset();
   _pool.remove("internal.ticks");
+    _pool.remove("internal.onsets");
   _pool.remove("internal.confidence");
   _pool.remove("internal.bpm");
   _pool.remove("internal.estimates");

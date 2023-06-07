@@ -39,11 +39,13 @@ BeatTrackerMultiFeature::BeatTrackerMultiFeature() : AlgorithmComposite(),
 
   declareInput(_signal, 1024, "signal", "input signal");
   declareOutput(_ticks, 0, "ticks", "the estimated tick locations [s]");
+  declareOutput(_onsets, 0, "onsets", "the raw onset detection [43.066 Hz 1024/44100]");
   declareOutput(_confidence, "confidence", "confidence of the beat tracker [0, 5.32]");
 
   // Need to set the buffer type to multiple frames as all the ticks
   // are output all at once
   _ticks.setBufferType(BufferUsage::forMultipleFrames);
+  _onsets.setBufferType(BufferUsage::forMultipleFrames);
 }
 
 void BeatTrackerMultiFeature::createInnerNetwork() {
@@ -98,6 +100,7 @@ void BeatTrackerMultiFeature::createInnerNetwork() {
   //_signal                                           >>   _onsetBeatEmphasis3->input("signal");
   _scale->output("signal")                         >>  _onsetBeatEmphasis3->input("signal");
   _onsetBeatEmphasis3->output("onsetDetections")   >>  _ticksBeatEmphasis3->input("onsetDetections");
+  _onsetBeatEmphasis3->output("onsetDetections")   >>  PC(_pool, "internal.onsets");
   _ticksBeatEmphasis3->output("ticks")             >>  PC(_pool, "internal.ticksBeatEmphasis");
 
   //_signal                                           >> _onsetInfogain4->input("signal");
@@ -236,6 +239,10 @@ AlgorithmStatus BeatTrackerMultiFeature::process() {
     _ticks.push(ticks[i]);
   }
   _confidence.push(confidence);
+    vector<Real> onsets = _pool.value<vector<Real>>("internal.onsets");
+    for (size_t i=0; i<onsets.size(); ++i) {
+        _onsets.push(onsets[i]);
+    }
   return FINISHED;
 }
 
@@ -283,6 +290,7 @@ const char* BeatTrackerMultiFeature::description = DOC("This algorithm estimates
 BeatTrackerMultiFeature::BeatTrackerMultiFeature() {
   declareInput(_signal, "signal", "the audio input signal");
   declareOutput(_ticks, "ticks", " the estimated tick locations [s]");
+  declareOutput(_onsets, "onsets", "the raw onset detection [43.066 Hz 1024/44100]");
   declareOutput(_confidence, "confidence", "confidence of the beat tracker [0, 5.32]");
 
   createInnerNetwork();
