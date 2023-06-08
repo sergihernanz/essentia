@@ -32,6 +32,7 @@ const char* BeatTrackerMultiFeature::description = essentia::standard::BeatTrack
 
 
 BeatTrackerMultiFeature::BeatTrackerMultiFeature() : AlgorithmComposite(),
+    _lowPass(0),
     _frameCutter1(0), _windowing1(0), _fft1(0), _cart2polar1(0), _onsetRms1(0),
     _onsetComplex1(0), _ticksRms1(0), _ticksComplex1(0), _onsetMelFlux1(0),
     _ticksMelFlux1(0), _onsetBeatEmphasis3(0), _ticksBeatEmphasis3(0),
@@ -53,6 +54,7 @@ void BeatTrackerMultiFeature::createInnerNetwork() {
   AlgorithmFactory& factory = AlgorithmFactory::instance();
 
   _frameCutter1         = factory.create("FrameCutter");
+  _lowPass              = factory.create("LowPass");
   _windowing1           = factory.create("Windowing");
   _fft1                 = factory.create("FFT");
   _cart2polar1          = factory.create("CartesianToPolar");
@@ -79,7 +81,8 @@ void BeatTrackerMultiFeature::createInnerNetwork() {
   // Connect internal algorithms
   //_signal                                    >>   _frameCutter1->input("signal");
   _signal                                    >>   _scale->input("signal");
-  _scale->output("signal")                   >>   _frameCutter1->input("signal");
+  _scale->output("signal")                   >>   _lowPass->input("signal");
+  _lowPass->output("signal")                 >>   _frameCutter1->input("signal");
   _frameCutter1->output("frame")             >>   _windowing1->input("frame");
   _windowing1->output("frame")               >>   _fft1->input("frame");
   _fft1->output("fft")                       >>   _cart2polar1->input("complex");
@@ -146,10 +149,13 @@ void BeatTrackerMultiFeature::configure() {
   // 'melflux' onset detection function, according to the evaluation at MTG
   // (JZapata, DBogdanov)
 
+  Real cutoff = 800.f;
+    
   // _scale is used as a dummy algorithm, turn off clipping so that it goes faster
   _scale->configure("factor", 1., 
                     "clipping", false);
 
+  _lowPass->configure("cutoffFrequency", cutoff);
   _frameCutter1->configure("frameSize", frameSize1,
                           "hopSize", hopSize1,
                           "silentFrames", "keep",

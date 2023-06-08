@@ -39,6 +39,7 @@ class BeatTrackerMultiFeature : public AlgorithmComposite {
   Pool _pool;
 
   // algorithm numeration corresponds to the process chains
+  Algorithm* _lowPass;
   Algorithm* _frameCutter1;
   Algorithm* _windowing1;
   Algorithm* _fft1;
